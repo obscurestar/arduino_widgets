@@ -17,6 +17,7 @@ class Rain
 {
 public:   //public variables.
   int mShiftOdds; //The 1 in n odds of picking a new hue mask.
+  byte mMaxBrightness; //Cap brighteness here.
 public:   //public functions.
   Rain(); //Default constructor
   Rain(int shift_odds, byte excluded=0, byte max_bright=255);  //Convenience ctor
@@ -30,7 +31,6 @@ private:
 private:  //class private variables
   byte mHueMask;  //Which bits are active on this iteration.
   byte mExcludeMask; //Which bits to exclude.
-  byte mMaxBrightness; //Cap brighteness here.
   bool mDirty;    //Set to true when any RGB not in current set is set for any pixel in chain.
   int  mDecayRate; //Lower is faster.
 };
