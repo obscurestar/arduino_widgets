@@ -17,7 +17,10 @@ class Rain
 {
 public:   //public variables.
   int mShiftOdds; //The 1 in n odds of picking a new hue mask.
+  int  mDecayRate; //Lower is faster.
   byte mMaxBrightness; //Cap brighteness here.
+  byte mHueMask;  //Which bits are active on this iteration.
+  byte mExcludeMask; //Which bits to exclude.
 public:   //public functions.
   Rain(); //Default constructor
   Rain(int shift_odds, byte excluded=0, byte max_bright=255);  //Convenience ctor
@@ -29,10 +32,7 @@ private:
   byte pickHueMask();   //Get a new hue mask
   byte walkPixels();    //The math of the shimmer.
 private:  //class private variables
-  byte mHueMask;  //Which bits are active on this iteration.
-  byte mExcludeMask; //Which bits to exclude.
   bool mDirty;    //Set to true when any RGB not in current set is set for any pixel in chain.
-  int  mDecayRate; //Lower is faster.
 };
 
 Rain::Rain()

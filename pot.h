@@ -5,7 +5,6 @@ class Pot
 private:
   unsigned char mPin;     //Data pin for potentiometer
   float mWeight;          //Smoothing for exp weighted avg. 0-1 lower is smoother/slower decay
-  float mAverage;         //Current average
 
   int mTimeout;           //Time to read pot in ms.
   int mThresh;            //threshold of movement required to update.
@@ -15,13 +14,14 @@ private:
   float mPrevious;        //Average at start of timestamp.
 
 public:
+  float mAverage;         //Current average
   Pot(){};
   Pot(unsigned char pin, float weight, int thresh=1, int timeout=300)
   {
     init(pin, weight, thresh, timeout);
   }
   
-  void init(unsigned char pin, float weight, int thresh, int timeout)
+  void init(unsigned char pin, float weight, int thresh, int timeout=300)
   {
     mPin = pin;
     mAverage=0.0f;
@@ -40,7 +40,7 @@ public:
   boolean getStatus()
   {
     int x = analogRead(mPin);
-    mAverage = (1.0 - mWeight) * mAverage + mWeight * (float)x;
+    mAverage = (1.0f - mWeight) * mAverage + mWeight * (float)x;
 
     //Is the pot moving?
     if ( abs(mAverage - mPrevious) > mThresh )

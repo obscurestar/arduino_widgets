@@ -24,7 +24,7 @@ class MidiPot
       init( pin, weight, smin, smax, thresh, timeout);
     }
 
-    void init(unsigned char pin, float weight, int smin, int smax, int thresh, int timeout)
+    void init(unsigned char pin, float weight, int smin, int smax, int thresh, int timeout=300)
     {
       mPot.init(pin, weight, thresh, timeout);
       mRange[0] = smin;
