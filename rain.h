@@ -3,26 +3,22 @@
 
 #ifndef RAIN_H  //These preprocessor directives let you include without worrying about dupes.
 #define RAIN_H  //Once defined it doesn't need to be re-included.
-#include <Adafruit_NeoPixel.h>  //Someone else did the heavy lifting.  Say thanks!
-#ifdef __AVR__
-  #include <avr/power.h>
-#endif
 
+#include "pixels.h"
 #include "color.h"
 
-extern const short NUM_LEDS; //Let's address this in V3!
-extern Adafruit_NeoPixel H_LEDS;
+extern Pixels PIXELS;
 
 class Rain
 {
 public:   //public variables.
-  int mShiftOdds; //The 1 in n odds of picking a new hue mask.
-  int  mDecayRate; //Lower is faster.
-  byte mMaxBrightness; //Cap brighteness here.
-  byte mHueMask;  //Which bits are active on this iteration.
-  byte mExcludeMask; //Which bits to exclude.
+  int shiftOdds; //The 1 in n odds of picking a new hue mask.
+  int  decayRate; //Lower is faster.
+  byte maxBrightness; //Cap brighteness here.
+  byte hueMask;  //Which bits are active on this iteration.
+  byte excludeMask; //Which bits to exclude.
 public:   //public functions.
-  Rain(); //Default constructor
+  Rain( ); //Default constructor
   Rain(int shift_odds, byte excluded=0, byte max_bright=255);  //Convenience ctor
   void loopStep();  //Per frame call from loop.
   void init(int shift_odds, byte excluded, byte max_bright);
@@ -35,33 +31,33 @@ private:  //class private variables
   bool mDirty;    //Set to true when any RGB not in current set is set for any pixel in chain.
 };
 
-Rain::Rain()
+Rain::Rain( )
 {
-  mDecayRate = 8;
-  init( 50, 0, 255 );
+  decayRate = 8;
+  init(50, 0, 255 );
 }
 
 Rain::Rain(int shift_odds, byte excluded=0, byte max_bright=255)
 {
-  init( shift_odds, excluded, max_bright );
+  init(shift_odds, excluded, max_bright );
 }
 
 void Rain::init(int shift_odds,byte excluded, byte max_bright)
 {
   mDirty = false;
-  mMaxBrightness = max_bright;
-  mShiftOdds = shift_odds;
-  mExcludeMask = excluded;
-  mHueMask = pickHueMask();
+  maxBrightness = max_bright;
+  shiftOdds = shift_odds;
+  excludeMask = excluded;
+  hueMask = pickHueMask();
 }
 
 void Rain::loopStep()
 {
   if (!walkPixels())
   {
-    if (!random(mShiftOdds))
+    if (!random(shiftOdds))
     {
-      mHueMask = pickHueMask();
+      hueMask = pickHueMask();
     }
   }
 }
@@ -96,7 +92,7 @@ byte Rain::pickHueMask()
   /*If the result is purely our exclude bit, let's make it a 1 in n chance that we decide to 
    * keep it.  Otherwise, just invert the byte selection.
    */
-  if (cbits == mExcludeMask && random(10) )
+  if (cbits == excludeMask && random(10) )
   {
     cbits = ~cbits;  // ~ is the complimentary operator 010 becomes 101 etc
   }
@@ -129,16 +125,17 @@ byte Rain::extractByte(long lc, signed int which)
 byte Rain::walkPixels()
 {
   mDirty=false;
-  for (int p=0;p<NUM_LEDS; ++p)  //Loop through pixels.
+  for (int p=0;p<PIXELS.getNumPixels(); ++p)  //Loop through pixels.
   {
     COLOR pc;
-    pc.l = H_LEDS.getPixelColor(p);
+    pc.l = PIXELS.getPixelColor(p);
+
     for (int c=0;c<4;++c)     //Loop through RBG sub-pixels of each pixel.
     {
-      if ( c!=3 && (mHueMask >> c) & 1 ) //White (3) always counts as dead
+      if ( c!=3 && (hueMask >> c) & 1 ) //White (3) always counts as dead
       {
           signed int val =pc.c[c] + (random(3) - 1); // rand result set [0,1,2] - 1 = [-1, 0, 1]
-          if (val > 0 && val < mMaxBrightness)
+          if (val > 0 && val < maxBrightness)
           {
             pc.c[c] = val;  //Stagger around in the relative color space.
           }
@@ -148,14 +145,14 @@ byte Rain::walkPixels()
         if (pc.c[c] > 0) //This RGB should not be set in this hue. Still draining previous color
         {
           mDirty=true;
-          if (!random(mDecayRate))
+          if (!random(decayRate))
           {
             pc.c[c] --; //Wander slowly towards 0.
           }
         }
       }
     }
-    H_LEDS.setPixelColor(p,pc.l);
+    PIXELS.setPixelColor(p,pc.l);
   }
   return mDirty;
 }

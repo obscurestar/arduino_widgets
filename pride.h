@@ -3,15 +3,11 @@
 
 #ifndef PRIDE_H  
 #define PRIDE_H
-#include <Adafruit_NeoPixel.h> 
-#ifdef __AVR__
-  #include <avr/power.h>
-#endif
 
+#include "pixels.h"
 #include "color.h"
 
-extern const short NUM_LEDS; 
-extern Adafruit_NeoPixel H_LEDS;
+extern Pixels PIXELS;
 extern long makeLC (byte r, byte g, byte b);
 
 class Pride
@@ -80,7 +76,7 @@ void Pride::loopStep()
     mIndex++;
     mStartTime = millis();  //Reset start time to now.
   }
-  if (mIndex >= NUM_LEDS)
+  if (mIndex >= PIXELS.getNumPixels())
   {
     mIndex = 0;
   }
@@ -91,9 +87,9 @@ void Pride::loopStep()
 
   if (mFlush)
   {
-    for (i=0;i<NUM_LEDS;++i)
+    for (i=0;i<PIXELS.getNumPixels();++i)
     {
-      H_LEDS.setPixelColor(i, 0l);
+      PIXELS.setPixelColor(i, 0l);
     }
   }
   
@@ -101,16 +97,16 @@ void Pride::loopStep()
   {
     for (j=0;j<mNumSolid;j++)
     {
-      index = index % NUM_LEDS;
-      H_LEDS.setPixelColor(index,mColors[i].l);
+      index = index % PIXELS.getNumPixels();
+      PIXELS.setPixelColor(index,mColors[i].l);
       index++;
     }
     float percent = (float)((float)elapsed/(float)mDuration);
     unsigned short next_col = (i+1) % mNumCols;
     for (j=0;j<mNumTrans;++j)
     {
-      index = index % NUM_LEDS;
-      H_LEDS.setPixelColor(index,mixc(mColors[i], mColors[next_col], percent));
+      index = index % PIXELS.getNumPixels();
+      PIXELS.setPixelColor(index,mixc(mColors[i], mColors[next_col], percent));
       index++;
     }
   }

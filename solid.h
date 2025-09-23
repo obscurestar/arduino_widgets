@@ -1,14 +1,9 @@
 #ifndef SOLID_H
 #define SOLID_H
-#include <Adafruit_NeoPixel.h>  //Someone else did the heavy lifting.  Say thanks!
-#ifdef __AVR__
-  #include <avr/power.h>
-#endif
 
-#include "color.h"
+#include "pixels.h"
 
-extern const short NUM_LEDS; //Let's address this in V3!
-extern Adafruit_NeoPixel H_LEDS;
+extern Pixels PIXELS
 
 class Solid
 {
@@ -32,10 +27,10 @@ public:
   
   void loopStep()
   {
-    for (int p=0;p<NUM_LEDS; ++p)  //Loop through pixels.
+    for (int p=0;p<PIXELS.getNumPixels(); ++p)  //Loop through pixels.
     {
       COLOR pc;
-      pc.l = H_LEDS.getPixelColor(p);
+      pc.l = PIXELS.getPixelColor(p);
 
       if (mColor.l != pc.l)   //Colors don't match.
       {
@@ -54,7 +49,7 @@ public:
             }
           }
         }
-        H_LEDS.setPixelColor(p,pc.l);
+        PIXELS.setPixelColor(p,pc.l);
       }
     }
   }
