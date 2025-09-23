@@ -11,6 +11,7 @@ private:
   float mInstantaneous;       //Last read of ms.
   float mWeight;          //Smoothing for exp weighted avg. 0-1 lower is smoother
   float mAverage;         //Current average
+  float mRanges[2];       //Min and max valid ranges.
 
 public:
   US_Range(){};
@@ -20,12 +21,21 @@ public:
     init(pin_trig,pin_echo,weight);
   }
 
+  void setRanges(float low, float high)
+  {
+    //Sets the min/max valid sensor read ranges, capped to realistic values.
+    mRanges[0] = max(low, 0.0);
+    mRanges[1] = min(high, 400.0);
+  }
+
   void init(unsigned char pin_trig, unsigned char pin_echo, float weight=1.0)
   {
     mPinTrigger = pin_trig;
     mPinEcho = pin_echo;
     mAverage=0.0f;
     mWeight=weight;  //Smoothing for exp weighted avg. 0-1 lower is smoother
+    mRanges[0] = 0.0; //Minimum range.
+    mRanges[1] = 400.0; //Max range.
     pinMode(mPinTrigger, OUTPUT); //Trigger a pulse on pin
     pinMode(mPinEcho, INPUT);  //Listen for echo on pin
   }
@@ -53,8 +63,15 @@ public:
     digitalWrite(mPinTrigger, LOW);
     //Reads the echoPin, returns sount travel time in microseconds.
     float duration = pulseIn(mPinEcho, HIGH);
-    mInstantaneous = (duration*.0343)/2;  //Dist in CM
-    mAverage = (1.0 - mWeight) * mAverage + mWeight * mInstantaneous;
+    mInstantaneous = (duration/2) / 29.1;  //Dist in CM
+    if (mInstantaneous < mRanges[0] || mInstantaneous > mRanges[1])
+    {
+        mInstantaneous = -1.0f;
+    }
+    else
+    {
+        mAverage = (1.0 - mWeight) * mAverage + mWeight * mInstantaneous;
+    }
     delayMicroseconds(2);
     return mAverage;
   }
